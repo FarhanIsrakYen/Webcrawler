@@ -36,7 +36,9 @@
     <div class="d-flex">
         <a type ="button" class="btn btn-primary me-3" href="{{ path('app_company_details_index') }}">Back to list</a>
         <a type ="button" class="btn btn-info me-3" href="{{ path('app_company_details_edit', {'id': companyDetails.id}) }}">Edit</a>
-        {{ include('company_details/_delete_form.html.twig') }}
+        <form method="post" action="{{ path('app_company_details_delete', {'id': companyDetails.id}) }}" onsubmit="return confirm('Are you sure you want to delete this item?');">
+            <button class="btn btn-danger">Delete</button>
+        </form>
     </div>
     <div class="container">
             <div class="row justify-content-center mt-5">

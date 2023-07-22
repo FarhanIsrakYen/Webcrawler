@@ -7,6 +7,7 @@ use App\Form\CompanyDetailsType;
 use App\Form\ScrapperFormType;
 use App\Model\CompanyDetailsModel;
 use App\Repository\CompanyDetailsRepository;
+use App\Repository\CompanyTurnoverRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\BrowserKit\HttpBrowser;
@@ -20,6 +21,7 @@ use Symfony\Component\HttpClient\HttpClient;
 class CompanyDetailsController extends AbstractController
 {
     private CompanyDetailsRepository $companyDetailsRepository;
+    private CompanyTurnoverRepository $companyTurnOverRepository;
     private CompanyDetailsModel $companyDetails;
     private const SEARCH_LINK = "https://rekvizitai.vz.lt/en/company-search/";
     private const SEARCHED_COMPANY = "https://rekvizitai.vz.lt/en/company-search/1/";
@@ -29,10 +31,12 @@ class CompanyDetailsController extends AbstractController
 
     public function __construct(
         CompanyDetailsRepository $companyDetailsRepository,
+        CompanyTurnoverRepository $companyTurnOverRepository,
         CompanyDetailsModel $companyDetails,
         HttpClientInterface $httpClient
     ) {
         $this->companyDetailsRepository = $companyDetailsRepository;
+        $this->companyTurnOverRepository = $companyTurnOverRepository;
         $this->companyDetails = $companyDetails;
         $this->httpClient = $httpClient;
     }
@@ -180,7 +184,9 @@ class CompanyDetailsController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_company_details_index', [], Response::HTTP_SEE_OTHER);
+            return $this->render('company_details/show.html.twig', [
+                'companyDetails' => $companyDetail
+            ]);
         }
 
         return $this->render('company_details/edit.html.twig', [
@@ -189,14 +195,15 @@ class CompanyDetailsController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', name: 'app_company_details_delete', methods: ['DELETE'])]
+    #[Route('/{id}', name: 'app_company_details_delete', methods: ['POST'])]
     public function delete(
         int $id,
         EntityManagerInterface $entityManager
     ): Response {
         $company = $this->companyDetailsRepository->find($id);
-            $entityManager->remove($company);
-            $entityManager->flush();
+        $this->companyTurnOverRepository->deleteMultipleData($company->getId());
+        $entityManager->remove($company);
+        $entityManager->flush();
 
         return $this->redirectToRoute('app_company_details_index', [], Response::HTTP_SEE_OTHER);
     }
