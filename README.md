@@ -2,7 +2,12 @@ QA Doc
 Purpose of this task was to create a scrapper that retrieves data from https://rekvizitai.vz.lt/en/company-search/ based on a registration code. 
 In order to test this task, follow the given steps please –
 •	At first, we need to create database. I’m using DBeaver for DB connection. Here database is “symfony” , user is “root” and password is also “root”  
-•	Once done, move to project and run “make build”. Make sure your docker desktop is running. 
+•	Once done, move to project and run “make build”. Better to use ubuntu shell to run the commands. Make sure your docker desktop is running. If you face 
+any error like “/usr/bin/env: 'php\r': No such file or directory” then run these command –
+    git config core.autocrlf false 
+    git rm --cached -r . 
+    git reset –hard
+•	Also make sure the container name of mysql is same in the .env file for DATABASE_URL
 •	Later on, run “make up”.  
 •	Now go to http://localhost/company/details/. 
 •	Now click “Fetch Company Data” button
