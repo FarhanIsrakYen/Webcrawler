@@ -58,7 +58,8 @@ class CompanyTurnoverRepository extends ServiceEntityRepository
         return $companyTurnover;
     }
 
-    public function deleteMultipleData(int $id){
+    public function deleteMultipleData(int $id)
+    {
         $qb = $this->createQueryBuilder('t');
         $qb->delete()
            ->where('t.company = :company')

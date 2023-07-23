@@ -11,7 +11,6 @@ reset: down
 	@$(DOCKER_COMP) -f docker-compose.yml build
 	@$(DOCKER_COMP) -f docker-compose.yml up -d --remove-orphans
 	make package
-	make migrate
 	make down
 
 cache:
