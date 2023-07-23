@@ -1,0 +1,8 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit Company Details{% endblock %}
+
+{% block body %}
+    <h1>Edit Company Details</h1>
+    {{ include('company_details/_form.html.twig', {'button_label': 'Update'}) }}
+{% endblock %}

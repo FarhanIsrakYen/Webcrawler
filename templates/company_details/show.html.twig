@@ -1,0 +1,83 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Company Details{% endblock %}
+
+{% block body %}
+    <h1>Company Details</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ companyDetails.id }}</td>
+            </tr>
+            <tr>
+                <th>Name</th>
+                <td>{{ companyDetails.name }}</td>
+            </tr>
+            <tr>
+                <th>RegistrationCode</th>
+                <td>{{ companyDetails.registrationCode }}</td>
+            </tr>
+            <tr>
+                <th>Vat</th>
+                <td>{{ companyDetails.vat }}</td>
+            </tr>
+            <tr>
+                <th>Address</th>
+                <td>{{ companyDetails.address }}</td>
+            </tr>
+            <tr>
+                <th>Phone</th>
+                <td><img src="https://rekvizitai.vz.lt/{{ companyDetails.phone }}" alt="Image"></td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="d-flex">
+        <a type ="button" class="btn btn-primary me-3" href="{{ path('app_company_details_index') }}">Back to list</a>
+        <a type ="button" class="btn btn-info me-3" href="{{ path('app_company_details_edit', {'id': companyDetails.id}) }}">Edit</a>
+        <form method="post" action="{{ path('app_company_details_delete', {'id': companyDetails.id}) }}" onsubmit="return confirm('Are you sure you want to delete this item?');">
+            <button class="btn btn-danger">Delete</button>
+        </form>
+    </div>
+    <div class="container">
+            <div class="row justify-content-center mt-5">
+                <div class="col">
+                    <table id="example" class="table table-striped" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Year</th>
+                                <th>Non-current assets</th>
+                                <th>Current assets</th>
+                                <th>Equity capital</th>
+                                <th>Amounts payable and other liabilities</th>
+                                <th>Sales revenue</th>
+                                <th>Profit (loss) before taxes</th>
+                                <th>Profit before taxes margin</th>
+                                <th>Net profit (loss)</th>
+                                <th>Net profit margin</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for companyTurnover in companyDetails.companyTurnovers %}
+                                <tr>
+                                    <td>{{companyTurnover.id}}</td>
+                                    <td>{{companyTurnover.year}}</td>
+                                    <td>{{companyTurnover.nonCurrentAssets}} €</td>
+                                    <td>{{companyTurnover.currentAssets}} €</td>
+                                    <td>{{companyTurnover.equityCapital}} €</td>
+                                    <td>{{companyTurnover.liabilities}} €</td>
+                                    <td>{{companyTurnover.salesRevenue}} €</td>
+                                    <td>{{companyTurnover.profitBeforeTaxes}} €</td>
+                                    <td>{{companyTurnover.profitBeforeTaxesMargin}} %</td>
+                                    <td>{{companyTurnover.netProfit}} €</td>
+                                    <td>{{companyTurnover.netProfitMargin}} %</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+{% endblock %}
