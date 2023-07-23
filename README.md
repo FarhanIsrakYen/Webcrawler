@@ -6,7 +6,7 @@ In order to test this task, follow the given steps please –
 any error like “/usr/bin/env: 'php\r': No such file or directory” then run these command –
     git config core.autocrlf false 
     git rm --cached -r . 
-    git reset –hard
+    git reset –-hard
 •	Also make sure the container name of mysql is same in the .env file for DATABASE_URL
 •	Later on, run “make up”.  
 •	Now go to http://localhost/company/details/. 
