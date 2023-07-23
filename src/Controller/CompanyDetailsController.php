@@ -25,7 +25,6 @@ class CompanyDetailsController extends AbstractController
     private CompanyDetailsModel $companyDetails;
     private const SEARCH_LINK = "https://rekvizitai.vz.lt/en/company-search/";
     private const SEARCHED_COMPANY = "https://rekvizitai.vz.lt/en/company-search/1/";
-    private const COMPANY_REPORT_PAGE = "report/";
     private const NO_RESULT_FOUND = 0;
     private $httpClient;
 
@@ -51,10 +50,25 @@ class CompanyDetailsController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $registrationCode = $form->getData()['registrationCode'];
             $registrationCodes = explode(',', $registrationCode);
+            $company = $companyDetailsRepository->findBy([
+                'registrationCode' => $registrationCodes
+            ]);
+            if (empty($company)) {
+                $this->addFlash(
+                    'danger',
+                    'No data found for provided codes - ' . $registrationCode
+                );
+                return $this->render('company_details/index.html.twig', [
+                    'companyDetails' => $company,
+                    'form' => $form
+                ]);
+            }
+            $this->addFlash(
+                'success',
+                'Search result of provided codes - ' . $registrationCode
+            );
             return $this->render('company_details/index.html.twig', [
-                'companyDetails' => $companyDetailsRepository->findBy([
-                    'registrationCode' => $registrationCodes
-                ]),
+                'companyDetails' => $company,
                 'form' => $form
             ]);
         }
@@ -94,7 +108,13 @@ class CompanyDetailsController extends AbstractController
             $registrationCodes = explode(',', $registrationCode);
             foreach ($registrationCodes as $registrationCode) {
                 if (!$this->companyDetails->isRegistrationCodeValid($registrationCode)) {
-                    return $this->redirectToRoute('app_company_details_fetch');
+                    $this->addFlash(
+                        'warning',
+                        'Wrong format of registration code provided - ' . $registrationCode
+                    );
+                    return $this->render('company_details/scrapper.html.twig', [
+                        'form' => $form->createView()
+                    ]);
                 }
                 $client = new HttpBrowser(HttpClient::create());
                 $crawler = $client->request('GET', self::SEARCH_LINK);
@@ -107,7 +127,13 @@ class CompanyDetailsController extends AbstractController
                 ->filterXPath('//*[@id="divExpandSearch"]/div[2]/strong')
                 ->innerText();
                 if ($resultQuantity == self::NO_RESULT_FOUND) {
-                    return $this->redirectToRoute('app_company_details_fetch');
+                    $this->addFlash(
+                        'danger',
+                        'No company found for - ' . $registrationCode
+                    );
+                    return $this->render('company_details/scrapper.html.twig', [
+                        'form' => $form->createView()
+                    ]);
                 }
                 $companyLink = $companyLinkCrawler
                 ->filterXPath('//*[@id="rekvizitai-app"]/div/div[2]/div/main/div[1]/div[3]/div/div[2]/div/div[1]/a[1]')
@@ -123,7 +149,13 @@ class CompanyDetailsController extends AbstractController
                 $bankruptInfo = $companyDetailsCrawler
                 ->filterXPath('//*[@id="rekvizitai-app"]/div/div[2]/div/main/div[1]/div[2]/div[2]');
                 if (count($bankruptInfo) != 0) {
-                    return $this->redirectToRoute('app_company_details_index');
+                    $this->addFlash(
+                        'danger',
+                        'Company was bankrupted having registration code - ' . $registrationCode
+                    );
+                    return $this->render('company_details/scrapper.html.twig', [
+                        'form' => $form->createView()
+                    ]);
                 }
 
                 $vatLabel = $companyDetailsCrawler
@@ -139,8 +171,6 @@ class CompanyDetailsController extends AbstractController
                     $vat = null;
                 }
 
-
-                $companyReportCrawler = $client->request('GET', $companyLink[0] . self::COMPANY_REPORT_PAGE);
                 $phone = $companyDetailsCrawler
                 ->filterXPath(
                     '//*[@id="rekvizitai-app"]/div/div[2]/div/main/div[1]/div[3]/div[3]/table/tbody/tr[3]/td[3]/img'
@@ -155,6 +185,10 @@ class CompanyDetailsController extends AbstractController
                 );
                 $this->companyDetails->storeTurnoverDetails($company, $companyLink[0]);
             }
+            $this->addFlash(
+                'success',
+                'Data have been fetched successfully having registration code of - ' . implode(',', $registrationCodes)
+            );
             return $this->redirectToRoute('app_company_details_index');
         }
 
@@ -184,6 +218,10 @@ class CompanyDetailsController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
 
+            $this->addFlash(
+                'success',
+                'Data have been updated successfully'
+            );
             return $this->render('company_details/show.html.twig', [
                 'companyDetails' => $companyDetail
             ]);
@@ -205,6 +243,10 @@ class CompanyDetailsController extends AbstractController
         $entityManager->remove($company);
         $entityManager->flush();
 
+        $this->addFlash(
+            'success',
+            'Company details have been removed successfully'
+        );
         return $this->redirectToRoute('app_company_details_index', [], Response::HTTP_SEE_OTHER);
     }
 }
